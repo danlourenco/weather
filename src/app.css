@@ -1,1 +1,41 @@
 @import 'tailwindcss';
+
+@font-face {
+	font-family: 'Star4000';
+	src: url('/fonts/Star4000.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'Star4000Small';
+	src: url('/fonts/Star4000Small.woff') format('woff');
+}
+
+@theme {
+	--color-weatherstar-blue: #1d0a57;
+	--color-box: #23326d;
+	--color-ticker-blue: #233270;
+	--color-deep-purple: #291052;
+	--color-purple-rain: #4b233e;
+	--color-burnt-orange: #c15d02;
+	--color-orange-redux: #be5c01;
+	--color-title-yellow: #ff0;
+}
+
+.text-shadow {
+	text-shadow:
+		3px 3px 0 #000,
+		-1.5px -1.5px 0 #000,
+		0 -1.5px 0 #000,
+		1.5px -1.5px 0 #000,
+		1.5px 0 0 #000,
+		1.5px 1.5px 0 #000,
+		0 1.5px 0 #000,
+		-1.5px 1.5px 0 #000,
+		-1.5px 0 0 #000;
+}
+
+
+body {
+	min-height: 100vh;
+	margin: 0;
+}
