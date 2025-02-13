@@ -8,3 +8,5 @@ export const api = {
 };
 
 export const celsiusToFahrenheit = (celsius: number) => (celsius * 9) / 5 + 32;
+export const kilometersToMiles = (km: number) => Math.round(km / 1.609_34);
+export const metersToMiles = (m: number) => Math.round(m * 0.00062137);

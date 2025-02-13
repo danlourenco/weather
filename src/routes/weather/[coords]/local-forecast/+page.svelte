@@ -29,7 +29,7 @@
 
 <main class="h-1/2">
 	<WeatherDisplay title="Local Forecast">
-		{currentForecast}
+		<p class="uppercase">{currentForecast}</p>
 	</WeatherDisplay>
 	<!-- <iframe
 		style="border-radius:12px"

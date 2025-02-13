@@ -11,6 +11,16 @@
 	src: url('/fonts/Star4000Small.woff') format('woff');
 }
 
+@font-face {
+	font-family: 'Star4000Large';
+	src: url('/fonts/Star4000Large.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'Star4000Extended';
+	src: url('/fonts/Star4000Extended.woff') format('woff');
+}
+
 @theme {
 	--color-weatherstar-blue: #1d0a57;
 	--color-box: #23326d;
