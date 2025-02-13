@@ -5,26 +5,17 @@
 	import WeatherDisplay from '$lib/components/WeatherDisplay.svelte';
 	import { celsiusToFahrenheit, kilometersToMiles, metersToMiles } from '$lib';
 
-	// const { temperature, dewpoint, windChill } = data.latestObservations;
-
 	const goToLocalForecast = () => {
 		console.log('Going to local forecast');
 		goto('/weather/42.1181163,-71.3396184/local-forecast');
 	};
 
-	// const abbreviatedDescription = {
-	// 	'Light Rain and Fog/Mist': {
-	// 		abbr: 'L Rain Fog/Mist',
-	// 		img: '/images/CC_Rain.gif'
-	// 	},
-	// 	'Fog/Mist'
-	// };
 	const weatherImageMap = {
 		fog_mist: '/images/CC_Fog.gif'
 	};
 </script>
 
-<div>
+<div id="current-conditions" onclick={goToLocalForecast}>
 	<WeatherDisplay title="Current Conditions">
 		<div class="flex flex-row justify-between">
 			<div class="flex w-1/2 flex-col text-center">
