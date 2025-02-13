@@ -35,7 +35,7 @@
 	<heading
 		class="relative z-10 flex flex-row bg-gradient-to-b from-[#be5c01] to-[#291052] text-white"
 	>
-		<div class="container mx-auto flex max-w-[1200px] flex-row items-center justify-start gap-x-12">
+		<div class="container mx-auto flex max-w-[1000px] flex-row items-center justify-start gap-x-12">
 			<div class="logo w-fit">
 				<img src="/images/Logo3.png" class="logo-img" alt="Weatherstar" />
 			</div>
@@ -53,7 +53,7 @@
 	>
 	<section class="flex-1 bg-gradient-to-b from-[#291052] to-[#c15d02]">
 		<div
-			class="bg-box text-shadow-lg container mx-auto h-full min-h-[400px] max-w-[1200px] p-8 text-4xl text-white uppercase shadow-[inset_0px_0px_5px_15px_rgba(38,81,177,1)]"
+			class="bg-box text-shadow-lg container mx-auto aspect-[1.7/1] max-w-[1000px] p-8 text-4xl text-white uppercase shadow-[inset_0px_0px_5px_15px_rgba(38,81,177,1)]"
 		>
 			{@render children()}
 		</div>
