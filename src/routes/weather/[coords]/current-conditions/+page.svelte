@@ -3,16 +3,19 @@
 	let { data }: PageProps = $props();
 	import { goto } from '$app/navigation';
 	import WeatherDisplay from '$lib/components/WeatherDisplay.svelte';
-	import { celsiusToFahrenheit, kilometersToMiles, metersToMiles } from '$lib';
+	import { celsiusToFahrenheit, metersToMiles, getWeatherImage } from '$lib';
 
 	const goToLocalForecast = () => {
 		console.log('Going to local forecast');
 		goto('/weather/42.1181163,-71.3396184/local-forecast');
 	};
 
-	const weatherImageMap = {
-		fog_mist: '/images/CC_Fog.gif'
-	};
+	const weatherImage = getWeatherImage(
+		data.latestObservations.presentWeather,
+		data.latestObservations.textDescription
+	);
+
+	console.log(data.latestObservations);
 </script>
 
 <div id="current-conditions" onclick={goToLocalForecast}>
@@ -23,12 +26,11 @@
 				<div class="font-[Star4000Extended] text-4xl">
 					{data.latestObservations.textDescription}
 				</div>
-				<div class="justify-items-center">
-					<img
-						src={weatherImageMap[data.latestObservations.presentWeather[0].weather]}
-						alt={data.latestObservations.textDescription}
-					/>
-				</div>
+				<!-- <div class="justify-items-center">
+					{#if weatherImage}
+						<img src={weatherImage} alt="Current weather condition Image" class="weather-icon" />
+					{/if}
+				</div> -->
 			</div>
 			<div>
 				<h2 class="text-title-yellow up mb-2 text-2xl normal-case">

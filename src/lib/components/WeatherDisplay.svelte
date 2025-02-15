@@ -44,9 +44,9 @@
 			</div>
 
 			<div
-				class="date-time text-shadow-lg relative ml-auto flex w-fit flex-col items-end font-[Star4000Small] text-4xl"
+				class="date-time text-shadow-lg relative ml-auto flex w-fit flex-col items-end font-[Star4000Small] text-3xl md:text-4xl"
 			>
-				<div class=" text-white">{currentTime}</div>
+				<div class=" md:leading-[0.3]">{currentTime}</div>
 				<div>{currentDate}</div>
 			</div>
 		</div></heading
