@@ -8,11 +8,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter({
-			platformProxy: {
-				configPath : 'wrangler.jsonc',
-			}
-		})
+		adapter: adapter()
 	}
 };
 
