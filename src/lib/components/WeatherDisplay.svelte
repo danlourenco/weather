@@ -39,14 +39,14 @@
 			<div class="logo w-fit">
 				<img src="/images/Logo3.png" class="logo-img" alt="Weatherstar" />
 			</div>
-			<div class="title text-title-yellow text-shadow-lg z-2 text-4xl">
+			<div class="title text-title-yellow text-shadow-lg z-2 text-3xl sm:text-4xl">
 				{title}
 			</div>
 
 			<div
-				class="date-time text-shadow-lg relative ml-auto flex w-fit flex-col items-end font-[Star4000Small] text-3xl md:text-4xl"
+				class="date-time text-shadow-lg relative ml-auto hidden w-fit flex-col items-end font-[Star4000Small] text-3xl md:visible md:flex md:text-4xl"
 			>
-				<div class=" md:leading-[0.3]">{currentTime}</div>
+				<div class="md:leading-[0.3]">{currentTime}</div>
 				<div>{currentDate}</div>
 			</div>
 		</div></heading

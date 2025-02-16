@@ -35,6 +35,6 @@
 
 <main class="h-1/2" onclick={goToCurrentConditions}>
 	<WeatherDisplay title="Local Forecast">
-		<p class="font-[Star4000] uppercase">{currentForecast}</p>
+		<p class="font-[Star4000] text-5xl uppercase">{currentForecast}</p>
 	</WeatherDisplay>
 </main>
