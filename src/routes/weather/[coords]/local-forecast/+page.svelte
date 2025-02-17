@@ -15,7 +15,6 @@
 	);
 
 	let index = $state(0);
-
 	let currentForecast = $state(forecasts[0]);
 
 	setInterval(() => {
@@ -25,11 +24,11 @@
 		} else {
 			index = 0;
 		}
-	}, 10000);
+	}, 5000);
 
 	const goToCurrentConditions = () => {
 		console.log('Going to local forecast');
-		goto('/weather/42.1181163,-71.3396184/current-conditions');
+		goto(`/weather/${data.coords}/current-conditions`);
 	};
 </script>
 

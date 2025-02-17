@@ -1,4 +1,4 @@
-const baseUrl = `https://api.weather.gov`;
+export const baseUrl = `https://api.weather.gov`;
 
 export const api = {
 	getAdvisories: (lat: number, long: number) =>

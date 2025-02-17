@@ -7,7 +7,7 @@
 
 	const goToLocalForecast = () => {
 		console.log('Going to local forecast');
-		goto('/weather/42.1181163,-71.3396184/local-forecast');
+		goto(`/weather/${data.coords}/local-forecast`);
 	};
 
 	const weatherImage = getWeatherImage(
