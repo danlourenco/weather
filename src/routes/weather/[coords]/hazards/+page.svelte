@@ -42,9 +42,9 @@
 
 <main
 	bind:this={scrollContainer}
-	class="bg-advisory-red text-shadow scroll-container relative h-[100%] overflow-hidden p-12 font-[Star4000] text-6xl leading-tight text-white uppercase"
+	class="bg-advisory-red text-shadow scroll-container relative container mx-auto h-[100%] overflow-hidden p-12 font-[Star4000] text-6xl leading-tight text-white uppercase"
 >
-	<div class=" absolute whitespace-pre-wrap" bind:this={textContent}>
+	<div class="absolute whitespace-pre-wrap" bind:this={textContent}>
 		<h2 class="mb-12">{data.hazards.headline}</h2>
 
 		{#each details as detail}
