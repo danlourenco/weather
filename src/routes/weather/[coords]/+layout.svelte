@@ -28,7 +28,8 @@
 		<div
 			class="container mx-auto flex h-full max-w-[1000px] flex-col items-end justify-end align-bottom"
 		>
-			<iframe
+			<audio src="/audio/champagne.mp3" autoplay style="width:100%; max-width:400px;"></audio>
+			<!-- <iframe
 				style="border-radius:12px"
 				src="https://open.spotify.com/embed/playlist/4fy63sCR8lNnqj0U23yOjN?utm_source=generator"
 				width="100%"
@@ -37,7 +38,7 @@
 				title="Spotify Playlist"
 				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
 				loading="lazy"
-			></iframe>
+			></iframe> -->
 		</div>
 	</div>
 </div>
