@@ -1,12 +1,10 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
-	import { goto } from '$app/navigation';
+	import { WeatherNavigation } from '$lib/services/navigation';
 
 	const handleVideoEnded = () => {
-		console.log({ data });
-
-		goto(`/weather/${data.coords}/local-forecast`);
+		WeatherNavigation.goToLocalForecast(data.coords);
 	};
 </script>
 

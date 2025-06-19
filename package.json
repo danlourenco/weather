@@ -52,6 +52,6 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
-		"daisyui": "^5.0.0-beta.7"
+		"daisyui": "^5.0.35"
 	}
 }
