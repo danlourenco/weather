@@ -2,6 +2,7 @@
 	import WeatherDisplay from '$lib/components/WeatherDisplay.svelte';
 	import type { PageProps } from './$types';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	interface Period {
 		name: string;
@@ -17,14 +18,18 @@
 	let index = $state(0);
 	let currentForecast = $state(forecasts[0]);
 
-	setInterval(() => {
-		currentForecast = forecasts[index];
-		if (index < forecasts.length) {
-			index++;
-		} else {
-			index = 0;
-		}
-	}, 5000);
+	onMount(() => {
+		const interval = setInterval(() => {
+			currentForecast = forecasts[index];
+			if (index < forecasts.length) {
+				index++;
+			} else {
+				index = 0;
+			}
+		}, 5000);
+
+		return () => clearInterval(interval);
+	});
 
 	const goToCurrentConditions = () => {
 		console.log('Going to local forecast');

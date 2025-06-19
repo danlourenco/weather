@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	let { children, title = 'Title' } = $props();
 
 	let currentTime = $state(
@@ -17,18 +19,22 @@
 		})
 	);
 
-	setInterval(() => {
-		currentTime = new Date().toLocaleTimeString([], {
-			hour: '2-digit',
-			minute: '2-digit',
-			second: '2-digit'
-		});
-		currentDate = new Date().toLocaleDateString([], {
-			weekday: 'short',
-			month: 'short',
-			day: 'numeric'
-		});
-	}, 1000);
+	onMount(() => {
+		const interval = setInterval(() => {
+			currentTime = new Date().toLocaleTimeString([], {
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit'
+			});
+			currentDate = new Date().toLocaleDateString([], {
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric'
+			});
+		}, 1000);
+
+		return () => clearInterval(interval);
+	});
 </script>
 
 <div class="text-shadow flex w-full flex-col font-[Star4000Large]">
@@ -39,12 +45,12 @@
 			<div class="logo w-fit">
 				<img src="/images/Logo3.png" class="logo-img" alt="Weatherstar" />
 			</div>
-			<div class="title text-title-yellow text-shadow-lg z-2 text-3xl sm:text-4xl">
+			<div class="title text-title-yellow z-2 text-3xl text-shadow-lg sm:text-4xl">
 				{title}
 			</div>
 
 			<div
-				class="date-time text-shadow-lg relative ml-auto hidden w-fit flex-col items-end font-[Star4000Small] text-3xl md:visible md:flex md:text-4xl"
+				class="date-time relative ml-auto hidden w-fit flex-col items-end font-[Star4000Small] text-3xl text-shadow-lg md:visible md:flex md:text-4xl"
 			>
 				<div class="md:leading-[0.3]">{currentTime}</div>
 				<div>{currentDate}</div>
@@ -53,7 +59,7 @@
 	>
 	<section class="flex-1">
 		<div
-			class="text-shadow-lg container mx-auto aspect-[1.7/1] max-w-[1000px] bg-[#21285a] p-8 text-4xl text-white shadow-[inset_0px_0px_5px_15px_rgba(38,81,177,1)]"
+			class="container mx-auto aspect-[1.7/1] max-w-[1000px] bg-[#21285a] p-8 text-4xl text-white shadow-[inset_0px_0px_5px_15px_rgba(38,81,177,1)] text-shadow-lg"
 		>
 			{@render children()}
 		</div>
