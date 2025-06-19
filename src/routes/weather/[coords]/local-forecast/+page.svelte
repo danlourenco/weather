@@ -1,27 +1,26 @@
 <script lang="ts">
-	import WeatherDisplay from '$lib/components/WeatherDisplay.svelte';
+	import ClickableWeatherCard from '$lib/components/ClickableWeatherCard.svelte';
+	import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
 	import type { PageProps } from './$types';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-
-	interface Period {
-		name: string;
-		detailedForecast: string;
-	}
+	import { WeatherNavigation } from '$lib/services/navigation';
+	import { transformForecastPeriods } from '$lib/services/weatherTransforms';
 
 	let { data }: PageProps = $props();
 
-	const forecasts = data?.forecast?.map(
-		(period: Period) => `${period.name}...${period.detailedForecast}`
-	);
+	// Transform forecast data using service
+	const forecasts = transformForecastPeriods(data?.forecast || []);
 
 	let index = $state(0);
-	let currentForecast = $state(forecasts[0]);
+	let currentForecast = $state(forecasts[0] || '');
 
 	onMount(() => {
+		// Only start rotation if we have forecast data
+		if (!data.hasForecast || forecasts.length === 0) return;
+		
 		const interval = setInterval(() => {
 			currentForecast = forecasts[index];
-			if (index < forecasts.length) {
+			if (index < forecasts.length - 1) {
 				index++;
 			} else {
 				index = 0;
@@ -32,13 +31,24 @@
 	});
 
 	const goToCurrentConditions = () => {
-		console.log('Going to local forecast');
-		goto(`/weather/${data.coords}/current-conditions`);
+		WeatherNavigation.goToCurrentConditions(data.coords);
 	};
 </script>
 
-<main class="h-1/2" onclick={goToCurrentConditions}>
-	<WeatherDisplay title="Local Forecast">
-		<p class="font-[Star4000] text-5xl uppercase">{currentForecast}</p>
-	</WeatherDisplay>
+<main class="h-1/2">
+	<ClickableWeatherCard title="Local Forecast" onclick={goToCurrentConditions}>
+		{#if data.hasForecast && forecasts.length > 0}
+			<p class="font-[Star4000] text-5xl uppercase">{currentForecast}</p>
+		{:else if data.error}
+			<ErrorDisplay 
+				title="Unable to Load Forecast" 
+				message={data.error} 
+			/>
+		{:else}
+			<ErrorDisplay 
+				title="No Forecast Available" 
+				message="Unable to retrieve weather forecast for this location" 
+			/>
+		{/if}
+	</ClickableWeatherCard>
 </main>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onNavigate } from '$app/navigation';
+	import { page } from '$app/stores';
 	let { children } = $props();
 
 	onNavigate((navigation) => {
@@ -12,6 +13,9 @@
 			});
 		});
 	});
+
+	// Check if we're on the video page (root weather page)
+	let isVideoPage = $derived($page.route.id === '/weather/[coords]');
 </script>
 
 <div class="flex h-screen flex-col" id="weatherLayout">
@@ -28,7 +32,9 @@
 		<div
 			class="container mx-auto flex h-full max-w-[1000px] flex-col items-end justify-end align-bottom"
 		>
-			<audio src="/audio/champagne.mp3" autoplay style="width:100%; max-width:400px;"></audio>
+			{#if !isVideoPage}
+				<audio src="/audio/champagne.mp3" autoplay style="width:100%; max-width:400px;"></audio>
+			{/if}
 			<!-- <iframe
 				style="border-radius:12px"
 				src="https://open.spotify.com/embed/playlist/4fy63sCR8lNnqj0U23yOjN?utm_source=generator"
