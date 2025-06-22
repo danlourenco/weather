@@ -1,37 +1,45 @@
 import type { PageLoad } from './$types';
+import { weatherApi } from '$lib/services/api';
+import type { LoaderResult } from '$lib/types/errors';
+import { ErrorType } from '$lib/types/errors';
 
-export const load: PageLoad = async ({ fetch, parent }) => {
-	try {
-		const parentData = await parent();
-		
-		if (!parentData.location?.forecast) {
-			throw new Error('No forecast URL available from parent data');
-		}
-		
-		const res = await fetch(parentData.location.forecast);
-		
-		if (!res.ok) {
-			throw new Error(`HTTP error! status: ${res.status}`);
-		}
-		
-		const data = await res.json();
-		
-		// Safe access to forecast periods with validation
-		const periods = data.properties?.periods;
-		if (!periods || !Array.isArray(periods)) {
-			throw new Error('Invalid forecast data structure');
-		}
-		
+interface ForecastData {
+	forecast: any[];
+	hasForecast: boolean;
+	coords: string;
+}
+
+export const load: PageLoad = async ({ parent }): Promise<LoaderResult<ForecastData>> => {
+	const parentData = await parent();
+	
+	if (!parentData.location?.forecast) {
 		return {
-			forecast: periods,
-			hasForecast: periods.length > 0
-		};
-	} catch (error) {
-		console.error('Failed to load forecast:', error);
-		return {
-			forecast: [],
-			hasForecast: false,
-			error: 'Failed to load weather forecast'
+			data: null,
+			error: {
+				type: ErrorType.API_ERROR,
+				message: 'No forecast URL available for this location',
+				retryable: false
+			}
 		};
 	}
+	
+	const forecastResult = await weatherApi.getForecast(parentData.location.forecast);
+	
+	if (forecastResult.error) {
+		return {
+			data: null,
+			error: forecastResult.error
+		};
+	}
+	
+	const periods = forecastResult.data || [];
+	
+	return {
+		data: {
+			forecast: periods,
+			hasForecast: periods.length > 0,
+			coords: parentData.coords
+		},
+		error: null
+	};
 };

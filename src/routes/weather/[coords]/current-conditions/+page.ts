@@ -1,50 +1,94 @@
 import type { PageLoad } from './$types';
+import { weatherApi } from '$lib/services/api';
+import type { LoaderResult } from '$lib/types/errors';
+import { ErrorType } from '$lib/types/errors';
 
-export const load: PageLoad = async ({ fetch, parent }) => {
-	try {
-		const parentData = await parent();
-		
-		if (!parentData.location?.observationStations) {
-			throw new Error('No observation stations available');
-		}
-		
-		const res = await fetch(parentData.location.observationStations);
-		
-		if (!res.ok) {
-			throw new Error(`HTTP error! status: ${res.status}`);
-		}
-		
-		const data = await res.json();
-		
-		// Safe array access with validation
-		const stationApi = data.observationStations?.[0];
-		if (!stationApi) {
-			throw new Error('No observation stations found in response');
-		}
+interface CurrentConditionsData {
+	station: any;
+	latestObservations: any;
+	hasData: boolean;
+	coords: string;
+}
 
-		const results = await Promise.all([
-			fetch(stationApi).then((res) => {
-				if (!res.ok) throw new Error(`Station API error: ${res.status}`);
-				return res.json();
-			}),
-			fetch(`${stationApi}/observations/latest`).then((res) => {
-				if (!res.ok) throw new Error(`Observations API error: ${res.status}`);
-				return res.json();
-			})
-		]);
-
+export const load: PageLoad = async ({ parent }): Promise<LoaderResult<CurrentConditionsData>> => {
+	const parentData = await parent();
+	
+	if (!parentData.location?.observationStations) {
 		return {
-			station: results[0]?.properties || null,
-			latestObservations: results[1]?.properties || null,
-			hasData: !!(results[0]?.properties && results[1]?.properties)
-		};
-	} catch (error) {
-		console.error('Failed to load current conditions:', error);
-		return {
-			station: null,
-			latestObservations: null,
-			hasData: false,
-			error: 'Failed to load current weather conditions'
+			data: null,
+			error: {
+				type: ErrorType.API_ERROR,
+				message: 'No observation stations available for this location',
+				retryable: false
+			}
 		};
 	}
+	
+	// Extract gridpoint from observation stations URL
+	const stationsUrl = parentData.location.observationStations;
+	const gridpointMatch = stationsUrl.match(/\/gridpoints\/([^\/]+\/[^\/]+)/);
+	
+	if (!gridpointMatch) {
+		return {
+			data: null,
+			error: {
+				type: ErrorType.API_ERROR,
+				message: 'Invalid observation stations URL format',
+				retryable: false
+			}
+		};
+	}
+	
+	const gridpoint = gridpointMatch[1];
+	const stationsResult = await weatherApi.getStations(gridpoint);
+	
+	if (stationsResult.error) {
+		return {
+			data: null,
+			error: stationsResult.error
+		};
+	}
+	
+	if (!stationsResult.data || stationsResult.data.length === 0) {
+		return {
+			data: null,
+			error: {
+				type: ErrorType.NOT_FOUND,
+				message: 'No weather stations found for this area',
+				retryable: false
+			}
+		};
+	}
+	
+	// Get the first station's ID
+	const stationId = stationsResult.data[0]?.properties?.stationIdentifier;
+	if (!stationId) {
+		return {
+			data: null,
+			error: {
+				type: ErrorType.API_ERROR,
+				message: 'Invalid station data received',
+				retryable: false
+			}
+		};
+	}
+	
+	const observationsResult = await weatherApi.getLatestObservations(stationId);
+	
+	if (observationsResult.error) {
+		return {
+			data: null,
+			error: observationsResult.error
+		};
+	}
+	
+	return {
+		data: {
+			station: stationsResult.data[0]?.properties || null,
+			latestObservations: observationsResult.data || null,
+			hasData: !!(stationsResult.data[0]?.properties && observationsResult.data),
+			coords: parentData.coords
+		},
+		error: null
+	};
 };

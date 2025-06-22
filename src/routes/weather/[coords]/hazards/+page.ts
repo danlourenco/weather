@@ -1,30 +1,59 @@
 import type { PageLoad } from './$types';
+import { weatherApi } from '$lib/services/api';
+import type { LoaderResult } from '$lib/types/errors';
+import { ErrorType } from '$lib/types/errors';
 
-export const load: PageLoad = async ({ fetch, params }) => {
-	try {
-		const hazards = await fetch(
-			`https://api.weather.gov/alerts/active?point=${params.coords}&limit=5`
-		);
-		
-		if (!hazards.ok) {
-			throw new Error(`HTTP error! status: ${hazards.status}`);
-		}
-		
-		const json = await hazards.json();
-		
-		// Safe array access with fallback
-		const hazardData = json.features?.[0]?.properties || null;
-		
+interface HazardsData {
+	hazards: any;
+	hasHazards: boolean;
+	coords: string;
+}
+
+export const load: PageLoad = async ({ params }): Promise<LoaderResult<HazardsData>> => {
+	const coords = params.coords?.split(',');
+	if (!coords || coords.length !== 2) {
 		return {
-			hazards: hazardData,
-			hasHazards: hazardData !== null
-		};
-	} catch (error) {
-		console.error('Failed to load hazards:', error);
-		return {
-			hazards: null,
-			hasHazards: false,
-			error: 'Failed to load weather hazards'
+			data: null,
+			error: {
+				type: ErrorType.VALIDATION,
+				message: 'Invalid coordinates format',
+				retryable: false
+			}
 		};
 	}
+	
+	const [lat, lon] = coords;
+	const latNum = parseFloat(lat);
+	const lonNum = parseFloat(lon);
+	
+	if (isNaN(latNum) || isNaN(lonNum)) {
+		return {
+			data: null,
+			error: {
+				type: ErrorType.VALIDATION,
+				message: 'Invalid coordinate values',
+				retryable: false
+			}
+		};
+	}
+	
+	const advisoriesResult = await weatherApi.getAdvisories(latNum, lonNum);
+	
+	if (advisoriesResult.error) {
+		return {
+			data: null,
+			error: advisoriesResult.error
+		};
+	}
+	
+	const hazardData = advisoriesResult.data?.[0]?.properties || null;
+	
+	return {
+		data: {
+			hazards: hazardData,
+			hasHazards: hazardData !== null,
+			coords: `${lat},${lon}`
+		},
+		error: null
+	};
 };

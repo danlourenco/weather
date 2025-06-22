@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ClickableWeatherCard from '$lib/components/ClickableWeatherCard.svelte';
-	import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 	import type { PageProps } from './$types';
 	import { onMount } from 'svelte';
 	import { WeatherNavigation } from '$lib/services/navigation';
@@ -9,14 +9,14 @@
 	let { data }: PageProps = $props();
 
 	// Transform forecast data using service
-	const forecasts = transformForecastPeriods(data?.forecast || []);
+	const forecasts = transformForecastPeriods(data.data?.forecast || []);
 
 	let index = $state(0);
 	let currentForecast = $state(forecasts[0] || '');
 
 	onMount(() => {
 		// Only start rotation if we have forecast data
-		if (!data.hasForecast || forecasts.length === 0) return;
+		if (!data.data?.hasForecast || forecasts.length === 0) return;
 		
 		const interval = setInterval(() => {
 			currentForecast = forecasts[index];
@@ -31,23 +31,27 @@
 	});
 
 	const goToCurrentConditions = () => {
-		WeatherNavigation.goToCurrentConditions(data.coords);
+		WeatherNavigation.goToCurrentConditions(data.data?.coords || '');
 	};
 </script>
 
 <main class="h-1/2">
 	<ClickableWeatherCard title="Local Forecast" onclick={goToCurrentConditions}>
-		{#if data.hasForecast && forecasts.length > 0}
+		{#if data.data?.hasForecast && forecasts.length > 0}
 			<p class="font-[Star4000] text-5xl uppercase">{currentForecast}</p>
 		{:else if data.error}
-			<ErrorDisplay 
-				title="Unable to Load Forecast" 
-				message={data.error} 
+			<ErrorState 
+				error={data.error}
+				onRetry={() => window.location.reload()}
+				fallbackTitle="Unable to Load Forecast"
+				fallbackMessage="Unable to retrieve weather forecast for this location"
 			/>
 		{:else}
-			<ErrorDisplay 
-				title="No Forecast Available" 
-				message="Unable to retrieve weather forecast for this location" 
+			<ErrorState 
+				error={null}
+				fallbackTitle="No Forecast Available"
+				fallbackMessage="Unable to retrieve weather forecast for this location"
+				showRetry={false}
 			/>
 		{/if}
 	</ClickableWeatherCard>

@@ -3,43 +3,61 @@
 	let { data }: PageProps = $props();
 	import ClickableWeatherCard from '$lib/components/ClickableWeatherCard.svelte';
 	import WeatherDataGrid from '$lib/components/WeatherDataGrid.svelte';
-	import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
-	import { celsiusToFahrenheit, metersToMiles, getWeatherImage } from '$lib';
+	import ErrorState from '$lib/components/ErrorState.svelte';
+	import { celsiusToFahrenheit, metersToMiles, getWeatherIcon, formatWind } from '$lib';
 	import { WeatherNavigation } from '$lib/services/navigation';
-	import { 
-		getSafeTemperature, 
-		getSafeHumidity, 
-		getSafeVisibility, 
-		getSafeTextDescription, 
+	import {
+		getSafeTemperature,
+		getSafeHumidity,
+		getSafeVisibility,
+		getSafeTextDescription,
 		getSafeStationName,
 		isValidWeatherObservation,
 		isValidWeatherStation
 	} from '$lib/services/weatherTransforms';
 
 	const goToLocalForecast = () => {
-		WeatherNavigation.goToLocalForecast(data.coords);
+		WeatherNavigation.goToLocalForecast(data.data?.coords || '');
 	};
 
 	// Transform weather data using service
-	const observation = data.latestObservations;
-	const station = data.station;
-	
+	const observation = data.data?.latestObservations;
+	console.log(observation);
+	const station = data.data?.station;
+
 	const temperature = getSafeTemperature(observation, celsiusToFahrenheit);
 	const textDescription = getSafeTextDescription(observation);
 	const humidity = getSafeHumidity(observation);
 	const dewpoint = getSafeTemperature({ temperature: observation?.dewpoint }, celsiusToFahrenheit);
 	const visibility = getSafeVisibility(observation, metersToMiles);
-	const windChill = getSafeTemperature({ temperature: observation?.windChill }, celsiusToFahrenheit);
-	const stationName = getSafeStationName(station);
-	
-	const hasValidData = data.hasData && 
-		isValidWeatherObservation(observation) && 
-		isValidWeatherStation(station);
-
-	const weatherImage = getWeatherImage(
-		observation?.presentWeather,
-		observation?.textDescription
+	const windChill = getSafeTemperature(
+		{ temperature: observation?.windChill },
+		celsiusToFahrenheit
 	);
+	const stationName = getSafeStationName(station);
+
+	const hasValidData =
+		data.data?.hasData && isValidWeatherObservation(observation) && isValidWeatherStation(station);
+
+	// Extract coordinates for sunrise/sunset calculation
+	const [lat, lon] = data.data?.coords
+		? data.data.coords.split(',').map(Number)
+		: [undefined, undefined];
+
+	const weatherImage = hasValidData
+		? getWeatherIcon(
+				observation?.icon,
+				observation?.textDescription,
+				undefined, // currentTime - use default (now)
+				lat,
+				lon
+			)
+		: null;
+
+	// Format wind display
+	const windDisplay = hasValidData
+		? formatWind(observation?.windDirection?.value, observation?.windSpeed?.value)
+		: '';
 
 	// Prepare data grid items
 	const weatherDataItems = [
@@ -59,11 +77,14 @@
 					<div class="font-[Star4000Extended] text-4xl">
 						{textDescription}
 					</div>
-					<!-- <div class="justify-items-center">
+					<div class="justify-items-center">
 						{#if weatherImage}
 							<img src={weatherImage} alt="Current weather condition Image" class="weather-icon" />
 						{/if}
-					</div> -->
+						{#if windDisplay}
+							<div class="text-lg mt-2">Wind: {windDisplay}</div>
+						{/if}
+					</div>
 				</div>
 				<div>
 					<h2 class="text-title-yellow up mb-2 text-2xl normal-case">
@@ -73,14 +94,18 @@
 				</div>
 			</div>
 		{:else if data.error}
-			<ErrorDisplay 
-				title="Unable to Load Current Conditions" 
-				message={data.error} 
+			<ErrorState
+				error={data.error}
+				onRetry={() => window.location.reload()}
+				fallbackTitle="Unable to Load Current Conditions"
+				fallbackMessage="Unable to retrieve current conditions for this location"
 			/>
 		{:else}
-			<ErrorDisplay 
-				title="No Weather Data Available" 
-				message="Unable to retrieve current conditions for this location" 
+			<ErrorState
+				error={null}
+				fallbackTitle="No Weather Data Available"
+				fallbackMessage="Unable to retrieve current conditions for this location"
+				showRetry={false}
 			/>
 		{/if}
 	</ClickableWeatherCard>

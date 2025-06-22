@@ -2,17 +2,17 @@
 	import type { PageProps } from './$types';
 	import { onMount } from 'svelte';
 	import { transformHazardDetails } from '$lib/services/weatherTransforms';
-	import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 
 	let { data }: PageProps = $props();
 
 	// Transform hazard data using service
-	const details = transformHazardDetails(data.hazards?.description);
-	const hasValidHazards = data.hasHazards && data.hazards;
+	const details = transformHazardDetails(data.data?.hazards?.description);
+	const hasValidHazards = data.data?.hasHazards && data.data?.hazards;
 
-	let scrollContainer;
-	let textContent;
-	let delay = 3000;
+	let scrollContainer: HTMLElement;
+	let textContent: HTMLDivElement;
+	let delay = $state(3000);
 	let speed = 1;
 
 	onMount(() => {
@@ -50,21 +50,25 @@
 >
 	{#if hasValidHazards}
 		<div class="absolute whitespace-pre-wrap" bind:this={textContent}>
-			<h2 class="mb-12">{data.hazards.headline}</h2>
+			<h2 class="mb-12">{data.data?.hazards?.headline}</h2>
 
 			{#each details as detail}
 				<p class="my-8">{detail}</p>
 			{/each}
 		</div>
 	{:else if data.error}
-		<ErrorDisplay 
-			title="Unable to Load Weather Hazards" 
-			message={data.error} 
+		<ErrorState 
+			error={data.error}
+			onRetry={() => window.location.reload()}
+			fallbackTitle="Unable to Load Weather Hazards"
+			fallbackMessage="Unable to retrieve weather hazards for this location"
 		/>
 	{:else}
-		<ErrorDisplay 
-			title="No Active Weather Hazards" 
-			message="Your area is currently clear of weather alerts" 
+		<ErrorState 
+			error={null}
+			fallbackTitle="No Active Weather Hazards"
+			fallbackMessage="Your area is currently clear of weather alerts"
+			showRetry={false}
 		/>
 	{/if}
 </main>

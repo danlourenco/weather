@@ -104,3 +104,101 @@ Based on my analysis, here are the key structural issues and improvement opportu
 
   The app works but has fragile architecture. Priority should be fixing memory leaks, improving error handling, and extracting shared
   logic into services.
+
+
+
+
+  ⏺ Perfect! I've successfully addressed the mixed responsibilities issue by implementing a comprehensive
+  separation of concerns. Here's what I accomplished:
+
+  Mixed Responsibilities - Fixed!
+
+  1. Navigation Service (/src/lib/services/navigation.ts)
+
+  Before: Navigation logic scattered across every component
+  // Repeated in every component
+  const goToSomewhere = () => goto(`/weather/${data.coords}/somewhere`);
+
+  After: Centralized navigation service
+  export class WeatherNavigation {
+    static goToCurrentConditions(coords: string): void
+    static goToLocalForecast(coords: string): void
+    static goToHazards(coords: string): void
+    // etc...
+  }
+
+  2. Data Transformation Service (/src/lib/services/weatherTransforms.ts)
+
+  Before: Data processing mixed with presentation logic
+  // Components doing their own data transformation
+  const temp = Math.round(celsiusToFahrenheit(data.latestObservations.temperature?.value || 0));
+
+  After: Dedicated transformation functions
+  export function getSafeTemperature(observation: WeatherObservation, converter: Function): number
+  export function getSafeHumidity(observation: WeatherObservation): number
+  export function isValidWeatherObservation(observation: WeatherObservation): boolean
+
+  3. Reusable UI Components
+
+  Before: Duplicated UI patterns across components
+  <!-- Repeated error display pattern -->
+  <div class="flex h-full items-center justify-center">
+    <div class="text-center">
+      <h2 class="mb-8 text-4xl">Error Title</h2>
+      <p class="text-2xl">Error message</p>
+    </div>
+  </div>
+
+  After: Reusable components
+  - ErrorDisplay.svelte - Consistent error messaging
+  - WeatherDataGrid.svelte - Reusable data grid pattern
+  - ClickableWeatherCard.svelte - Consistent clickable weather cards
+
+  4. Clear Separation of Concerns
+
+  Components Now Focus On:
+  - Presentation logic only
+  - User interactions
+  - UI state management
+
+  Services Handle:
+  - Navigation logic
+  - Data transformation
+  - Business logic validation
+
+  5. Benefits Achieved:
+
+  1. Maintainability: Navigation changes only require updating one service
+  2. Reusability: Data transformation logic can be reused across components
+  3. Testability: Services can be unit tested independently
+  4. Consistency: All error displays look and behave the same
+  5. Readability: Components are much cleaner and focused
+
+  Example Transformation:
+
+  Before (mixed responsibilities):
+  <script>
+    // Navigation logic
+    const goSomewhere = () => goto(`/weather/${coords}/somewhere`);
+
+    // Data transformation
+    const temp = Math.round(celsiusToFahrenheit(data.temp?.value || 0));
+
+    // Repeated error UI
+    // Lots of inline validation
+  </script>
+
+  After (separated concerns):
+  <script>
+    import { WeatherNavigation } from '$lib/services/navigation';
+    import { getSafeTemperature } from '$lib/services/weatherTransforms';
+    import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
+
+    const goSomewhere = () => WeatherNavigation.goToSomewhere(coords);
+    const temperature = getSafeTemperature(data, celsiusToFahrenheit);
+  </script>
+
+  <!-- Clean, focused template with reusable components -->
+
+  The architecture is now much more maintainable with clear boundaries between navigation, data processing, and
+  presentation logic!
