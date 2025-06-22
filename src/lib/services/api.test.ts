@@ -27,6 +27,27 @@ describe('WeatherApiClient', () => {
 			expect(result.data).toEqual(mockPointData.properties);
 		});
 
+		it('should round coordinates to 4 decimal places', async () => {
+			// Test with high precision coordinates that need rounding
+			const lat = 42.117818577556015;
+			const lon = -71.34027962585594;
+
+			let capturedUrl = '';
+			server.use(
+				http.get(`${baseUrl}/points/:coords`, ({ params }) => {
+					capturedUrl = `${baseUrl}/points/${params.coords}`;
+					return HttpResponse.json(mockPointData);
+				})
+			);
+
+			const result = await client.getPointData(lat, lon);
+
+			// Verify the URL has properly rounded coordinates
+			expect(capturedUrl).toBe(`${baseUrl}/points/42.1178,-71.3403`);
+			expect(result.error).toBeNull();
+			expect(result.data).toEqual(mockPointData.properties);
+		});
+
 		it('should handle 404 errors for invalid coordinates', async () => {
 			const result = await client.getPointData(404, 404);
 
@@ -279,10 +300,8 @@ describe('WeatherApiClient', () => {
 
 			const result = await client.getAdvisories(lat, lon);
 
-			// Verify the URL has properly rounded coordinates
-			const url = new URL(capturedUrl);
-			expect(url.searchParams.get('point')).toBe('42.1178,-71.3403');
-			expect(url.searchParams.get('limit')).toBe('5');
+			// Verify the URL has properly rounded coordinates without URL encoding
+			expect(capturedUrl).toBe(`${baseUrl}/alerts/active?point=42.1178,-71.3403`);
 
 			// Verify we get the expected data
 			expect(result.error).toBeNull();
@@ -303,8 +322,7 @@ describe('WeatherApiClient', () => {
 
 			const result = await client.getAdvisories(lat, lon);
 
-			const url = new URL(capturedUrl);
-			expect(url.searchParams.get('point')).toBe(`${lat},${lon}`);
+			expect(capturedUrl).toBe(`${baseUrl}/alerts/active?point=${lat},${lon}`);
 			expect(result.error).toBeNull();
 			expect(result.data).toEqual(mockAdvisoriesData.features);
 		});
@@ -323,8 +341,7 @@ describe('WeatherApiClient', () => {
 
 			const result = await client.getAdvisories(lat, lon);
 
-			const url = new URL(capturedUrl);
-			expect(url.searchParams.get('point')).toBe('43,-72');
+			expect(capturedUrl).toBe(`${baseUrl}/alerts/active?point=43,-72`);
 			expect(result.error).toBeNull();
 		});
 	});

@@ -117,7 +117,11 @@ export class WeatherApiClient {
 
 	async getPointData(lat: number, lon: number): Promise<LoaderResult<any>> {
 		return this.safeApiCall(async () => {
-			const response = await this.fetchWithRetry(`${baseUrl}/points/${lat},${lon}`);
+			// Round coordinates to 4 decimal places to match NWS API expectations
+			const roundedLat = Math.round(lat * 10000) / 10000;
+			const roundedLon = Math.round(lon * 10000) / 10000;
+
+			const response = await this.fetchWithRetry(`${baseUrl}/points/${roundedLat},${roundedLon}`);
 			const data = await response.json();
 
 			if (!data.properties) {
@@ -175,11 +179,10 @@ export class WeatherApiClient {
 			const roundedLat = Math.round(lat * 10000) / 10000;
 			const roundedLon = Math.round(lon * 10000) / 10000;
 
-			const url = new URL(`${baseUrl}/alerts/active`);
-			url.searchParams.set('point', `${roundedLat},${roundedLon}`);
-			url.searchParams.set('limit', '5');
+			// Construct URL manually to avoid encoding the comma in coordinates
+			const url = `${baseUrl}/alerts/active?point=${roundedLat},${roundedLon}`;
 
-			const response = await this.fetchWithRetry(url.toString());
+			const response = await this.fetchWithRetry(url);
 			const data = await response.json();
 
 			return data.features || [];
