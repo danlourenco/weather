@@ -164,6 +164,7 @@ export const weatherApiHandlers = [
 		const url = new URL(request.url);
 		const point = url.searchParams.get('point');
 
+		// Check for test error cases
 		if (point === '404,404') {
 			return new HttpResponse(null, { status: 404 });
 		}

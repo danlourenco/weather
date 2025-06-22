@@ -171,9 +171,15 @@ export class WeatherApiClient {
 
 	async getAdvisories(lat: number, lon: number): Promise<LoaderResult<any>> {
 		return this.safeApiCall(async () => {
-			const response = await this.fetchWithRetry(
-				`${baseUrl}/alerts/active?point=${lat}%2C${lon}&limit=5`
-			);
+			// Round coordinates to 4 decimal places to match NWS API expectations
+			const roundedLat = Math.round(lat * 10000) / 10000;
+			const roundedLon = Math.round(lon * 10000) / 10000;
+
+			const url = new URL(`${baseUrl}/alerts/active`);
+			url.searchParams.set('point', `${roundedLat},${roundedLon}`);
+			url.searchParams.set('limit', '5');
+
+			const response = await this.fetchWithRetry(url.toString());
 			const data = await response.json();
 
 			return data.features || [];

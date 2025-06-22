@@ -251,11 +251,81 @@ describe('WeatherApiClient', () => {
 		});
 
 		it('should handle server errors', async () => {
+			server.use(
+				http.get(`${baseUrl}/alerts/active`, () => {
+					return new HttpResponse(null, { status: 404 });
+				})
+			);
+
 			const result = await client.getAdvisories(404, 404);
 
 			expect(result.data).toBeNull();
 			expect(result.error).toBeDefined();
 			expect(result.error?.type).toBe(ErrorType.API_ERROR);
+		});
+
+		it('should round coordinates to 4 decimal places', async () => {
+			// Test with high precision coordinates that need rounding
+			const lat = 42.117818577556015;
+			const lon = -71.34027962585594;
+
+			let capturedUrl = '';
+			server.use(
+				http.get(`${baseUrl}/alerts/active`, ({ request }) => {
+					capturedUrl = request.url;
+					return HttpResponse.json(mockAdvisoriesData);
+				})
+			);
+
+			const result = await client.getAdvisories(lat, lon);
+
+			// Verify the URL has properly rounded coordinates
+			const url = new URL(capturedUrl);
+			expect(url.searchParams.get('point')).toBe('42.1178,-71.3403');
+			expect(url.searchParams.get('limit')).toBe('5');
+
+			// Verify we get the expected data
+			expect(result.error).toBeNull();
+			expect(result.data).toEqual(mockAdvisoriesData.features);
+		});
+
+		it('should handle negative coordinates correctly', async () => {
+			const lat = -45.123;
+			const lon = -123.456;
+
+			let capturedUrl = '';
+			server.use(
+				http.get(`${baseUrl}/alerts/active`, ({ request }) => {
+					capturedUrl = request.url;
+					return HttpResponse.json(mockAdvisoriesData);
+				})
+			);
+
+			const result = await client.getAdvisories(lat, lon);
+
+			const url = new URL(capturedUrl);
+			expect(url.searchParams.get('point')).toBe(`${lat},${lon}`);
+			expect(result.error).toBeNull();
+			expect(result.data).toEqual(mockAdvisoriesData.features);
+		});
+
+		it('should handle edge case rounding correctly', async () => {
+			const lat = 42.99999; // Should round to 43.0000
+			const lon = -71.99999; // Should round to -72.0000
+
+			let capturedUrl = '';
+			server.use(
+				http.get(`${baseUrl}/alerts/active`, ({ request }) => {
+					capturedUrl = request.url;
+					return HttpResponse.json(mockAdvisoriesData);
+				})
+			);
+
+			const result = await client.getAdvisories(lat, lon);
+
+			const url = new URL(capturedUrl);
+			expect(url.searchParams.get('point')).toBe('43,-72');
+			expect(result.error).toBeNull();
 		});
 	});
 
