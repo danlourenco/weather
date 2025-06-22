@@ -30,15 +30,16 @@ export function transformForecastPeriods(periods: Period[]): string[] {
 		return [];
 	}
 
-	return periods.map(
-		(period: Period) => `${period.name}...${period.detailedForecast}`
-	);
+	return periods.map((period: Period) => `${period.name}...${period.detailedForecast}`);
 }
 
 /**
  * Extract safe temperature value with fallback
  */
-export function getSafeTemperature(observation: WeatherObservation, converter: (temp: number) => number): number {
+export function getSafeTemperature(
+	observation: WeatherObservation,
+	converter: (temp: number) => number
+): number {
 	const tempValue = observation?.temperature?.value;
 	if (typeof tempValue !== 'number' || isNaN(tempValue)) {
 		return 0;
@@ -60,7 +61,10 @@ export function getSafeHumidity(observation: WeatherObservation): number {
 /**
  * Extract safe visibility value with fallback
  */
-export function getSafeVisibility(observation: WeatherObservation, converter: (meters: number) => number): number {
+export function getSafeVisibility(
+	observation: WeatherObservation,
+	converter: (meters: number) => number
+): number {
 	const visibility = observation?.visibility?.value;
 	if (typeof visibility !== 'number' || isNaN(visibility)) {
 		return 0;
@@ -81,7 +85,7 @@ export function getSafeTextDescription(observation: WeatherObservation): string 
 export function getSafeStationName(station: WeatherStation): string {
 	const name = station?.name;
 	if (!name) return 'Unknown Location';
-	
+
 	const parts = name.split(', ');
 	return parts[1] || parts[0] || 'Unknown Location';
 }
@@ -93,7 +97,7 @@ export function isValidWeatherObservation(observation: WeatherObservation): bool
 	return !!(
 		observation &&
 		typeof observation.temperature?.value === 'number' &&
-		observation.textDescription
+		!isNaN(observation.temperature.value)
 	);
 }
 
@@ -111,5 +115,5 @@ export function transformHazardDetails(description?: string): string[] {
 	if (!description || typeof description !== 'string') {
 		return [];
 	}
-	return description.split('\n\n').filter(detail => detail.trim().length > 0);
+	return description.split('\n\n').filter((detail) => detail.trim().length > 0);
 }
