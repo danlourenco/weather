@@ -1,9 +1,9 @@
-import { 
-	WeatherError, 
-	createNetworkError, 
-	createApiError, 
+import {
+	WeatherError,
+	createNetworkError,
+	createApiError,
 	createTimeoutError,
-	type LoaderResult 
+	type LoaderResult
 } from '$lib/types/errors';
 
 interface RetryOptions {
@@ -24,7 +24,7 @@ export const baseUrl = 'https://api.weather.gov';
 
 export class WeatherApiClient {
 	private async fetchWithRetry(
-		url: string, 
+		url: string,
 		options: RequestInit = {},
 		retryOptions: RetryOptions = {}
 	): Promise<Response> {
@@ -65,7 +65,6 @@ export class WeatherApiClient {
 					`HTTP error: ${response.status} ${response.statusText}`,
 					response.status
 				);
-
 			} catch (error) {
 				lastError = error instanceof Error ? error : new Error(String(error));
 
@@ -81,12 +80,9 @@ export class WeatherApiClient {
 					break;
 				}
 
-				const delay = Math.min(
-					config.baseDelay * Math.pow(2, attempt),
-					config.maxDelay
-				);
+				const delay = Math.min(config.baseDelay * Math.pow(2, attempt), config.maxDelay);
 
-				await new Promise(resolve => setTimeout(resolve, delay));
+				await new Promise((resolve) => setTimeout(resolve, delay));
 			}
 		}
 
@@ -99,21 +95,19 @@ export class WeatherApiClient {
 		);
 	}
 
-	private async safeApiCall<T>(
-		apiCall: () => Promise<T>
-	): Promise<LoaderResult<T>> {
+	private async safeApiCall<T>(apiCall: () => Promise<T>): Promise<LoaderResult<T>> {
 		try {
 			const data = await apiCall();
 			return { data, error: null };
 		} catch (error) {
 			console.error('API call failed:', error);
-			
+
 			if (error instanceof WeatherError) {
 				return { data: null, error: error.toAppError() };
 			}
 
-			return { 
-				data: null, 
+			return {
+				data: null,
 				error: createNetworkError(
 					error instanceof Error ? error.message : 'Unknown error occurred'
 				).toAppError()
@@ -125,11 +119,11 @@ export class WeatherApiClient {
 		return this.safeApiCall(async () => {
 			const response = await this.fetchWithRetry(`${baseUrl}/points/${lat},${lon}`);
 			const data = await response.json();
-			
+
 			if (!data.properties) {
 				throw createApiError('Invalid response from weather API: missing properties');
 			}
-			
+
 			return data.properties;
 		});
 	}
@@ -138,11 +132,11 @@ export class WeatherApiClient {
 		return this.safeApiCall(async () => {
 			const response = await this.fetchWithRetry(forecastUrl);
 			const data = await response.json();
-			
+
 			if (!data.properties?.periods) {
 				throw createApiError('Invalid forecast data: missing periods');
 			}
-			
+
 			return data.properties.periods;
 		});
 	}
@@ -151,11 +145,11 @@ export class WeatherApiClient {
 		return this.safeApiCall(async () => {
 			const response = await this.fetchWithRetry(`${baseUrl}/gridpoints/${gridpoint}/stations`);
 			const data = await response.json();
-			
+
 			if (!data.features) {
 				throw createApiError('Invalid stations data: missing features');
 			}
-			
+
 			return data.features;
 		});
 	}
@@ -166,11 +160,11 @@ export class WeatherApiClient {
 				`${baseUrl}/stations/${stationId}/observations/latest`
 			);
 			const data = await response.json();
-			
+
 			if (!data.properties) {
 				throw createApiError('Invalid observation data: missing properties');
 			}
-			
+
 			return data.properties;
 		});
 	}
@@ -181,7 +175,7 @@ export class WeatherApiClient {
 				`${baseUrl}/alerts/active?point=${lat}%2C${lon}&limit=5`
 			);
 			const data = await response.json();
-			
+
 			return data.features || [];
 		});
 	}
