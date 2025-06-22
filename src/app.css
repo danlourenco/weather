@@ -47,8 +47,47 @@
 		-1.5px 0 0 #000;
 }
 
-
 body {
 	min-height: 100vh;
 	margin: 0;
+}
+
+/* Hazards page specific styling */
+.scroll-container {
+	position: relative;
+	overflow: hidden;
+}
+
+.scroll-container .scrolling-content {
+	transition: transform 0.1s linear;
+}
+
+/* Enhanced text shadow for better readability on hazards */
+.hazard-text-shadow {
+	text-shadow:
+		4px 4px 0 #000,
+		-2px -2px 0 #000,
+		0 -2px 0 #000,
+		2px -2px 0 #000,
+		2px 0 0 #000,
+		2px 2px 0 #000,
+		0 2px 0 #000,
+		-2px 2px 0 #000,
+		-2px 0 0 #000,
+		0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Pulsing animation for urgency */
+@keyframes hazard-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+.hazard-urgent {
+	animation: hazard-pulse 2s ease-in-out infinite;
 }

@@ -4,13 +4,16 @@ import type { LoaderResult } from '$lib/types/errors';
 import { ErrorType } from '$lib/types/errors';
 
 interface HazardsData {
-	hazards: any;
+	hazards: any[];
 	hasHazards: boolean;
 	coords: string;
 }
 
-export const load: PageLoad = async ({ params }): Promise<LoaderResult<HazardsData>> => {
-	const coords = params.coords?.split(',');
+export const load: PageLoad = async ({ parent }): Promise<LoaderResult<HazardsData>> => {
+	const parentData = await parent();
+
+	// Extract coordinates from parent data
+	const coords = parentData.coords?.split(',');
 	if (!coords || coords.length !== 2) {
 		return {
 			data: null,
@@ -21,12 +24,10 @@ export const load: PageLoad = async ({ params }): Promise<LoaderResult<HazardsDa
 			}
 		};
 	}
-	
-	const [lat, lon] = coords;
-	const latNum = parseFloat(lat);
-	const lonNum = parseFloat(lon);
-	
-	if (isNaN(latNum) || isNaN(lonNum)) {
+
+	const [lat, lon] = coords.map(Number);
+
+	if (isNaN(lat) || isNaN(lon)) {
 		return {
 			data: null,
 			error: {
@@ -36,23 +37,25 @@ export const load: PageLoad = async ({ params }): Promise<LoaderResult<HazardsDa
 			}
 		};
 	}
-	
-	const advisoriesResult = await weatherApi.getAdvisories(latNum, lonNum);
-	
+
+	const advisoriesResult = await weatherApi.getAdvisories(lat, lon);
+
 	if (advisoriesResult.error) {
 		return {
 			data: null,
 			error: advisoriesResult.error
 		};
 	}
-	
-	const hazardData = advisoriesResult.data?.[0]?.properties || null;
-	
+
+	// Get all hazards, not just the first one
+	const hazards =
+		advisoriesResult.data?.map((advisory: any) => advisory.properties).filter(Boolean) || [];
+
 	return {
 		data: {
-			hazards: hazardData,
-			hasHazards: hazardData !== null,
-			coords: `${lat},${lon}`
+			hazards,
+			hasHazards: hazards.length > 0,
+			coords: parentData.coords
 		},
 		error: null
 	};
